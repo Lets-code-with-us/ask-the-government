@@ -14,6 +14,7 @@ import { HowItWorksPage } from './pages/HowItWorksPage';
 import { CommunityGuidelinesPage } from './pages/CommunityGuidelinesPage';
 import { ContactSupportPage } from './pages/ContactSupportPage';
 import { useAuth } from './hooks/useAuth';
+import {ProfilePage} from './pages/ProfilePage';
 
 function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -63,6 +64,7 @@ function App() {
         <Route path="/how-it-works" element={<HowItWorksPage />} />
         <Route path="/community-guidelines" element={<CommunityGuidelinesPage />} />
         <Route path="/contact-support" element={<ContactSupportPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
 
       <AskQuestionModal
