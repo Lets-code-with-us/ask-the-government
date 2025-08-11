@@ -4,6 +4,7 @@ export const mockQuestions: Question[] = [
   {
     id: '1',
     text: 'Should the government increase funding for public transportation infrastructure by 25% over the next 3 years?',
+    category: 'Transportation',
     hashtags: ['infrastructure', 'transportation', 'budget'],
     country: 'United States',
     yesVotes: 8247,
@@ -19,6 +20,7 @@ export const mockQuestions: Question[] = [
   {
     id: '2',
     text: 'Should all government procurement contracts above $100,000 be published publicly with full transparency?',
+    category: 'Economy',
     hashtags: ['transparency', 'corruption', 'procurement'],
     country: 'Canada',
     yesVotes: 15234,
@@ -34,6 +36,7 @@ export const mockQuestions: Question[] = [
   {
     id: '3',
     text: 'Should teacher salaries be increased by 15% to address the education staffing crisis?',
+    category: 'Education',
     hashtags: ['education', 'teachers', 'salary'],
     country: 'United Kingdom',
     yesVotes: 9876,
@@ -48,6 +51,7 @@ export const mockQuestions: Question[] = [
   {
     id: '4',
     text: 'Should the city mandate that all new buildings include solar panels by 2026?',
+    category: 'Environment',
     hashtags: ['environment', 'renewable', 'building'],
     country: 'Australia',
     yesVotes: 6543,
@@ -62,6 +66,7 @@ export const mockQuestions: Question[] = [
   {
     id: '5',
     text: 'Should prescription drug prices be capped at 200% of manufacturing cost for seniors?',
+    category: 'Healthcare',
     hashtags: ['healthcare', 'seniors', 'prescription'],
     country: 'United States',
     yesVotes: 11234,
@@ -76,6 +81,7 @@ export const mockQuestions: Question[] = [
   {
     id: '6',
     text: 'Should the government implement rent control limiting annual increases to 3% in major cities?',
+    category: 'Housing',
     hashtags: ['housing', 'rent', 'affordability'],
     country: 'Germany',
     yesVotes: 7234,

@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { X, MessageCircle, Hash, Send, AlertCircle, MapPin } from 'lucide-react';
+import { X, MessageCircle, Hash, Send, AlertCircle, MapPin, Tag } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { QUESTION_CATEGORIES, CATEGORY_ICONS } from '../constants/categories';
 
 interface AskQuestionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmit: (questionText: string, category: string, hashtags: string[], country: string) => void;
 }
 
 export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
   isOpen,
   onClose,
+  onSubmit,
 }) => {
   const [question, setQuestion] = useState('');
+  const [category, setCategory] = useState('');
   const [hashtagInput, setHashtagInput] = useState('');
   const [country, setCountry] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +29,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAuthenticated || !question.trim() || !country.trim()) return;
+    if (!isAuthenticated || !question.trim() || !category.trim() || !country.trim()) return;
 
     setIsSubmitting(true);
     
@@ -34,16 +38,11 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
       .map(tag => tag.trim().toLowerCase())
       .filter(tag => tag.length > 0);
 
-    // In a real app, this would submit to your backend
-    console.log('Question submitted:', {
-      question: question.trim(),
-      hashtags,
-      country: country.trim(),
-      author: { id: 'current-user', name: 'Current User' },
-      createdAt: new Date(),
-    });
+    // Submit the question
+    onSubmit(question.trim(), category.trim(), hashtags, country.trim());
     
     setQuestion('');
+    setCategory('');
     setHashtagInput('');
     setCountry('');
     setIsSubmitting(false);
@@ -52,6 +51,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
 
   const handleClose = () => {
     setQuestion('');
+    setCategory('');
     setHashtagInput('');
     setCountry('');
     setIsSubmitting(false);
@@ -115,6 +115,31 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              Category *
+            </label>
+            <div className="relative">
+              <Tag size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
+                required
+              >
+                <option value="">Select a category</option>
+                {QUESTION_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {CATEGORY_ICONS[cat]} {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">
+              Choose the most relevant category for your question
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Country *
             </label>
             <div className="relative">
@@ -162,6 +187,12 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
           {question.trim() && (
             <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
               <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+              {category.trim() && (
+                <div className="flex items-center space-x-1 text-sm text-gray-600 mb-2">
+                  <Tag size={14} />
+                  <span className="font-medium">{category}</span>
+                </div>
+              )}
               {country.trim() && (
                 <div className="flex items-center space-x-1 text-sm text-gray-600 mb-2">
                   <MapPin size={14} />
@@ -197,7 +228,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={!question.trim() || !country.trim() || isSubmitting}
+              disabled={!question.trim() || !category.trim() || !country.trim() || isSubmitting}
               className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
             >
               <Send size={16} />

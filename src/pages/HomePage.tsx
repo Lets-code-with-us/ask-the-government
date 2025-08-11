@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { QuestionFeed } from '../components/QuestionFeed';
 import { useAuth } from '../hooks/useAuth';
-import { mockQuestions } from '../data/mockQuestions';
 import { Question } from '../types';
 
 interface HomePageProps {
+  questions: Question[];
   onLoginClick: () => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
-  const [questions, setQuestions] = useState<Question[]>(mockQuestions);
+export const HomePage: React.FC<HomePageProps> = ({ questions, onLoginClick }) => {
   const { isAuthenticated } = useAuth();
 
   const handleVote = (questionId: string, voteType: 'yes' | 'no') => {
@@ -18,44 +17,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
       return;
     }
 
-    setQuestions(prev =>
-      prev.map(q => {
-        if (q.id === questionId && !q.userVote) {
-          const updatedQuestion = {
-            ...q,
-            userVote: voteType,
-            yesVotes: voteType === 'yes' ? q.yesVotes + 1 : q.yesVotes,
-            noVotes: voteType === 'no' ? q.noVotes + 1 : q.noVotes,
-          };
-          updatedQuestion.totalVotes = updatedQuestion.yesVotes + updatedQuestion.noVotes;
-          return updatedQuestion;
-        }
-        return q;
-      })
-    );
-  };
-
-  const handleAskQuestion = (questionText: string, hashtags: string[], country: string) => {
-    const { user, isAuthenticated } = useAuth();
-    if (!isAuthenticated || !user) return;
-
-    const newQuestion: Question = {
-      id: Date.now().toString(),
-      text: questionText,
-      hashtags,
-      country,
-      yesVotes: 0,
-      noVotes: 0,
-      totalVotes: 0,
-      author: {
-        id: user.id,
-        name: user.name,
-        avatar: user.avatar,
-      },
-      createdAt: new Date(),
-    };
-
-    setQuestions(prev => [newQuestion, ...prev]);
+    // Note: In a real app, this would update the backend
+    // For now, we'll just show the login modal
+    console.log('Vote recorded:', { questionId, voteType });
   };
 
   return (

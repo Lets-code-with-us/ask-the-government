@@ -14,13 +14,16 @@ import { HowItWorksPage } from './pages/HowItWorksPage';
 import { CommunityGuidelinesPage } from './pages/CommunityGuidelinesPage';
 import { ContactSupportPage } from './pages/ContactSupportPage';
 import { useAuth } from './hooks/useAuth';
-import {ProfilePage} from './pages/ProfilePage';
+import { ProfilePage } from './pages/ProfilePage';
+import { Question } from './types';
+import { mockQuestions } from './data/mockQuestions';
 
 function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isLoading, isAuthenticated } = useAuth();
+  const [questions, setQuestions] = useState<Question[]>(mockQuestions);
+  const { isLoading, isAuthenticated, user } = useAuth();
 
   const handleFABClick = () => {
     if (!isAuthenticated) {
@@ -28,6 +31,30 @@ function App() {
     } else {
       setIsAskModalOpen(true);
     }
+  };
+
+  const handleAskQuestion = (questionText: string, category: string, hashtags: string[], country: string) => {
+    if (!isAuthenticated || !user) return;
+
+    const newQuestion: Question = {
+      id: Date.now().toString(),
+      text: questionText,
+      category,
+      hashtags,
+      country,
+      yesVotes: 0,
+      noVotes: 0,
+      totalVotes: 0,
+      author: {
+        id: user.id,
+        name: user.name,
+        avatar: user.avatar,
+      },
+      createdAt: new Date(),
+    };
+
+    setQuestions(prev => [newQuestion, ...prev]);
+    setIsAskModalOpen(false);
   };
 
   if (isLoading) {
@@ -51,6 +78,7 @@ function App() {
               onMenuClick={() => setIsMobileMenuOpen(true)}
             />
             <HomePage 
+              questions={questions}
               onLoginClick={() => setIsLoginModalOpen(true)}
             />
             <FloatingActionButton
@@ -70,6 +98,7 @@ function App() {
       <AskQuestionModal
         isOpen={isAskModalOpen}
         onClose={() => setIsAskModalOpen(false)}
+        onSubmit={handleAskQuestion}
       />
 
       <LoginModal
