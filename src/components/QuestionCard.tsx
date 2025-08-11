@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Hash, Calendar, User, Shield, Share2, TrendingUp, MapPin, Flag } from 'lucide-react';
+import { Hash, Calendar, User, Shield, Share2, TrendingUp, MapPin, Flag, Wifi } from 'lucide-react';
 import { Question } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { VoteButton } from './VoteButton';
 import { ReportModal } from './ReportModal';
 import { calculateVoteStats } from '../utils/voteCalculations';
+import { websocketService } from '../utils/websocketService';
 
 interface QuestionCardProps {
   question: Question;
@@ -16,6 +17,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onVote }) 
   const [isVoting, setIsVoting] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const voteStats = calculateVoteStats(question.yesVotes, question.noVotes);
+  const isConnected = websocketService.isConnected();
 
   const handleVote = async (voteType: 'yes' | 'no') => {
     if (!isAuthenticated || question.userVote || isVoting) return;
@@ -70,6 +72,17 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onVote }) 
               <span>Controversial</span>
             </div>
           )}
+          
+          {/* Real-time Status Indicator */}
+          {isAuthenticated && (
+            <div className="flex items-center space-x-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+              <Wifi size={12} className={isConnected ? 'text-green-600' : 'text-red-600'} />
+              <span className="hidden sm:inline">
+                {isConnected ? 'Live' : 'Offline'}
+              </span>
+            </div>
+          )}
+          
           <button
             onClick={() => setIsReportModalOpen(true)}
             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -161,6 +174,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onVote }) 
       {question.userVote && (
         <p className="text-center text-sm text-green-600 mt-3 font-medium">
           ✓ You voted {question.userVote.toUpperCase()} on this question
+        </p>
+      )}
+
+      {/* Real-time Sync Status */}
+      {isAuthenticated && isVoting && (
+        <p className="text-center text-sm text-blue-600 mt-3 font-medium">
+          🔄 Syncing your vote...
         </p>
       )}
 

@@ -1,6 +1,7 @@
 import React from 'react';
-import { User, LogIn, LogOut, Menu } from 'lucide-react';
+import { User, LogIn, LogOut, Menu, Wifi, WifiOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { websocketService } from '../utils/websocketService';
 
 interface HeaderProps {
   onLoginClick: () => void;
@@ -9,6 +10,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onLoginClick, onMenuClick }) => {
   const { user, isAuthenticated, logout } = useAuth();
+  const isConnected = websocketService.isConnected();
+  const connectionState = websocketService.getConnectionState();
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
@@ -26,6 +29,20 @@ export const Header: React.FC<HeaderProps> = ({ onLoginClick, onMenuClick }) => 
         </div>
 
         <div className="flex items-center space-x-3">
+          {/* Connection Status Indicator */}
+          {isAuthenticated && (
+            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg">
+              {isConnected ? (
+                <Wifi size={16} className="text-green-600" />
+              ) : (
+                <WifiOff size={16} className="text-red-600" />
+              )}
+              <span className="text-xs text-gray-600 hidden sm:inline">
+                {isConnected ? 'Live' : connectionState}
+              </span>
+            </div>
+          )}
+
           {isAuthenticated ? (
             <div className="flex items-center space-x-2">
               <div className="hidden sm:flex items-center space-x-2">
