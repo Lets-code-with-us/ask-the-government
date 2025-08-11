@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User } from 'lucide-react';
+import { X, Mail, Lock, User,Eye,EyeOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 interface LoginModalProps {
@@ -9,6 +9,7 @@ interface LoginModalProps {
 
 export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [showPassword,setshowPassword] =useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -70,11 +71,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 <input
                   type="text"
                   name="name"
+                  placeholder='Enter your name'
                   value={formData.name}
                   onChange={handleInputChange}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
+              
               </div>
             </div>
           )}
@@ -88,6 +91,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
               <input
                 type="email"
                 name="email"
+                placeholder='name@example.com'
                 value={formData.email}
                 onChange={handleInputChange}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -100,16 +104,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Password
             </label>
-            <div className="relative">
+            <div className="relative flex" >
               <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
-                type="password"
+              
+                type={showPassword? "text":"password"}
                 name="password"
+                placeholder='Enter at least 6 characters'
                 value={formData.password}
                 onChange={handleInputChange}
                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                
               />
+              <button type='button'onClick={()=> setshowPassword(!showPassword)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400  opacity-40" >  
+              {showPassword? <Eye size={23} color='black' />: <EyeOff size={23} color='black' />}</button>
             </div>
           </div>
 

@@ -53,7 +53,10 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onVote }) 
           <User size={16} />
           <span className="font-medium">{question.author.name}</span>
           {question.isVerified && (
-            <Shield size={16} className="text-blue-600" title="Verified Question" />
+            <div title="Verified Question">
+              <Shield size={16} className="text-blue-600"  />
+            </div>
+            
           )}
           <span>•</span>
           <MapPin size={16} />
