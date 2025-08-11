@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Hash, Calendar, User, Shield, Share2, TrendingUp, MapPin, Flag } from 'lucide-react';
+import { Hash, Calendar, User, Shield, Share2, TrendingUp, MapPin, Flag, Tag } from 'lucide-react';
 import { Question } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { VoteButton } from './VoteButton';
 import { ReportModal } from './ReportModal';
 import { calculateVoteStats } from '../utils/voteCalculations';
+import { CATEGORY_COLORS, CATEGORY_ICONS } from '../constants/categories';
 
 interface QuestionCardProps {
   question: Question;
@@ -94,6 +95,16 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onVote }) 
       <p className="text-gray-900 mb-4 leading-relaxed font-medium">
         {question.text}
       </p>
+
+      {/* Category Badge */}
+      <div className="mb-4">
+        <span
+          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${CATEGORY_COLORS[question.category as keyof typeof CATEGORY_COLORS] || 'bg-gray-100 text-gray-800'}`}
+        >
+          <span className="mr-2">{CATEGORY_ICONS[question.category as keyof typeof CATEGORY_ICONS] || '📋'}</span>
+          {question.category}
+        </span>
+      </div>
 
       {/* Hashtags */}
       <div className="flex flex-wrap gap-2 mb-6">

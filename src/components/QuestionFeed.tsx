@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { QuestionCard } from './QuestionCard';
 import { SearchBar } from './SearchBar';
 import { Question } from '../types';
-import { Filter, TrendingUp, Clock, Zap } from 'lucide-react';
+import { Filter, TrendingUp, Clock, Zap, Tag } from 'lucide-react';
+import { QUESTION_CATEGORIES, CATEGORY_ICONS } from '../constants/categories';
 
 interface QuestionFeedProps {
   questions: Question[];
@@ -13,16 +14,23 @@ type SortOption = 'trending' | 'recent' | 'controversial';
 
 export const QuestionFeed: React.FC<QuestionFeedProps> = ({ questions, onVote }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortBy, setSortBy] = useState<SortOption>('trending');
 
   const filteredAndSortedQuestions = useMemo(() => {
     let filtered = questions;
 
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(question => question.category === selectedCategory);
+    }
+
     // Filter by search query
     if (searchQuery) {
-      filtered = questions.filter(question =>
+      filtered = filtered.filter(question =>
         question.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
         question.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        question.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         question.hashtags.some(hashtag =>
           hashtag.toLowerCase().includes(searchQuery.toLowerCase())
         )
@@ -48,7 +56,7 @@ export const QuestionFeed: React.FC<QuestionFeedProps> = ({ questions, onVote })
     });
 
     return sorted;
-  }, [questions, searchQuery, sortBy]);
+  }, [questions, searchQuery, selectedCategory, sortBy]);
 
   const getSortIcon = (option: SortOption) => {
     switch (option) {
@@ -72,32 +80,71 @@ export const QuestionFeed: React.FC<QuestionFeedProps> = ({ questions, onVote })
     }
   };
 
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('');
+  };
+
+  const hasActiveFilters = searchQuery || selectedCategory;
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
         <SearchBar onSearch={setSearchQuery} />
         
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Filter size={20} className="text-gray-400" />
-            <span className="text-sm text-gray-600">Sort by:</span>
-          </div>
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-            {(['trending', 'recent', 'controversial'] as SortOption[]).map((option) => (
-              <button
-                key={option}
-                onClick={() => setSortBy(option)}
-                className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors ${
-                  sortBy === option
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
+        {/* Filters Row */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {/* Category Filter */}
+            <div className="flex items-center space-x-2">
+              <Tag size={20} className="text-gray-400" />
+              <span className="text-sm text-gray-600">Category:</span>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
-                {getSortIcon(option)}
-                <span>{getSortLabel(option)}</span>
-              </button>
-            ))}
+                <option value="">All Categories</option>
+                {QUESTION_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {CATEGORY_ICONS[category]} {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort Options */}
+            <div className="flex items-center space-x-2">
+              <Filter size={20} className="text-gray-400" />
+              <span className="text-sm text-gray-600">Sort by:</span>
+              <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                {(['trending', 'recent', 'controversial'] as SortOption[]).map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => setSortBy(option)}
+                    className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors ${
+                      sortBy === option
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {getSortIcon(option)}
+                    <span>{getSortLabel(option)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
+
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -110,6 +157,7 @@ export const QuestionFeed: React.FC<QuestionFeedProps> = ({ questions, onVote })
             </h3>
             <p className="text-sm text-blue-700">
               Showing {getSortLabel(sortBy).toLowerCase()} questions
+              {selectedCategory && ` in ${selectedCategory}`}
               {searchQuery && ` matching "${searchQuery}"`}
             </p>
           </div>
@@ -129,7 +177,12 @@ export const QuestionFeed: React.FC<QuestionFeedProps> = ({ questions, onVote })
               <Filter size={24} className="text-gray-400" />
             </div>
             <p className="text-gray-500 text-lg font-medium mb-2">No questions found</p>
-            <p className="text-gray-400">Try adjusting your search or filters</p>
+            <p className="text-gray-400">
+              {hasActiveFilters 
+                ? 'Try adjusting your filters or search terms' 
+                : 'No questions available'
+              }
+            </p>
           </div>
         ) : (
           filteredAndSortedQuestions.map((question) => (
