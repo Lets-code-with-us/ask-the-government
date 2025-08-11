@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { QuestionFeed } from '../components/QuestionFeed';
 import { useAuth } from '../hooks/useAuth';
+import { useRealTimeVotes } from '../hooks/useRealTimeVotes';
 import { mockQuestions } from '../data/mockQuestions';
 import { Question } from '../types';
 
@@ -10,33 +11,59 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
   const [questions, setQuestions] = useState<Question[]>(mockQuestions);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+
+  // Handle real-time vote updates
+  const handleVoteUpdate = (updatedQuestion: Question) => {
+    setQuestions(prev =>
+      prev.map(q => 
+        q.id === updatedQuestion.id ? updatedQuestion : q
+      )
+    );
+  };
+
+  const { sendVoteUpdate, isConnected, connectionState } = useRealTimeVotes({
+    questions,
+    onVoteUpdate: handleVoteUpdate,
+  });
 
   const handleVote = (questionId: string, voteType: 'yes' | 'no') => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       onLoginClick();
       return;
     }
 
+    // Find the question to update
+    const question = questions.find(q => q.id === questionId);
+    if (!question || question.userVote) return;
+
+    // Calculate new vote counts
+    const newYesVotes = voteType === 'yes' ? question.yesVotes + 1 : question.yesVotes;
+    const newNoVotes = voteType === 'no' ? question.noVotes + 1 : question.noVotes;
+    const newTotalVotes = newYesVotes + newNoVotes;
+
+    // Update local state immediately (optimistic update)
+    const updatedQuestion = {
+      ...question,
+      userVote: voteType,
+      yesVotes: newYesVotes,
+      noVotes: newNoVotes,
+      totalVotes: newTotalVotes,
+    };
+
     setQuestions(prev =>
-      prev.map(q => {
-        if (q.id === questionId && !q.userVote) {
-          const updatedQuestion = {
-            ...q,
-            userVote: voteType,
-            yesVotes: voteType === 'yes' ? q.yesVotes + 1 : q.yesVotes,
-            noVotes: voteType === 'no' ? q.noVotes + 1 : q.noVotes,
-          };
-          updatedQuestion.totalVotes = updatedQuestion.yesVotes + updatedQuestion.noVotes;
-          return updatedQuestion;
-        }
-        return q;
-      })
+      prev.map(q => 
+        q.id === questionId ? updatedQuestion : q
+      )
     );
+
+    // Send vote update to other clients via WebSocket
+    if (isConnected) {
+      sendVoteUpdate(questionId, newYesVotes, newNoVotes, user.id);
+    }
   };
 
   const handleAskQuestion = (questionText: string, hashtags: string[], country: string) => {
-    const { user, isAuthenticated } = useAuth();
     if (!isAuthenticated || !user) return;
 
     const newQuestion: Question = {
@@ -67,6 +94,18 @@ export const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
         <p className="text-gray-600">
           Vote Yes or No on important questions to show public consensus and create accountability.
         </p>
+        
+        {/* Connection Status Indicator */}
+        {isAuthenticated && (
+          <div className="mt-4 flex items-center space-x-2">
+            <div className={`w-3 h-3 rounded-full ${
+              isConnected ? 'bg-green-500' : 'bg-red-500'
+            }`} />
+            <span className="text-sm text-gray-600">
+              {isConnected ? 'Real-time updates active' : `Connection: ${connectionState}`}
+            </span>
+          </div>
+        )}
       </div>
 
       <QuestionFeed questions={questions} onVote={handleVote} />

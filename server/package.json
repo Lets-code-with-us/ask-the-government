@@ -1,0 +1,19 @@
+{
+  "name": "ask-government-websocket-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for Ask the Government real-time updates",
+  "main": "websocket-server.js",
+  "scripts": {
+    "start": "node websocket-server.js",
+    "dev": "nodemon websocket-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": ["websocket", "real-time", "voting"],
+  "author": "Ask the Government Contributors",
+  "license": "MIT"
+}
