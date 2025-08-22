@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .message { background-color: #e2e3e5; padding: 10px; margin: 5px 0; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .send { background-color: #007bff; color: white; }
+        .disconnect { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Test Client</h1>
+    
+    <div id="status" class="status disconnected">Disconnected</div>
+    
+    <div>
+        <button id="connectBtn" class="send">Connect</button>
+        <button id="disconnectBtn" class="disconnect" disabled>Disconnect</button>
+    </div>
+    
+    <div>
+        <h3>Send Test Vote Update:</h3>
+        <button id="testVoteBtn" class="send" disabled>Send Test Vote</button>
+    </div>
+    
+    <div>
+        <h3>Messages:</h3>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        const statusDiv = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const testVoteBtn = document.getElementById('testVoteBtn');
+        const messagesDiv = document.getElementById('messages');
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusDiv.textContent = 'Connected';
+                statusDiv.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                testVoteBtn.disabled = false;
+            } else {
+                statusDiv.textContent = 'Disconnected';
+                statusDiv.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                testVoteBtn.disabled = true;
+            }
+        }
+
+        function addMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.textContent = `${new Date().toLocaleTimeString()}: ${JSON.stringify(message)}`;
+            messagesDiv.appendChild(messageDiv);
+        }
+
+        connectBtn.addEventListener('click', () => {
+            try {
+                ws = new WebSocket('ws://localhost:8080');
+                
+                ws.onopen = () => {
+                    updateStatus(true);
+                    addMessage('Connected to WebSocket server');
+                };
+                
+                ws.onmessage = (event) => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        addMessage(`Received: ${message.type}`);
+                    } catch (error) {
+                        addMessage(`Error parsing message: ${error.message}`);
+                    }
+                };
+                
+                ws.onclose = () => {
+                    updateStatus(false);
+                    addMessage('Disconnected from WebSocket server');
+                };
+                
+                ws.onerror = (error) => {
+                    addMessage(`WebSocket error: ${error}`);
+                };
+            } catch (error) {
+                addMessage(`Connection error: ${error.message}`);
+            }
+        });
+
+        disconnectBtn.addEventListener('click', () => {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        });
+
+        testVoteBtn.addEventListener('click', () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const testVote = {
+                    type: 'vote_update',
+                    payload: {
+                        questionId: 'test-123',
+                        yesVotes: 42,
+                        noVotes: 23,
+                        totalVotes: 65,
+                        userId: 'test-user'
+                    },
+                    timestamp: Date.now()
+                };
+                
+                ws.send(JSON.stringify(testVote));
+                addMessage(`Sent: ${testVote.type}`);
+            }
+        });
+    </script>
+</body>
+</html>
