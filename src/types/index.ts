@@ -1,6 +1,7 @@
 export interface Question {
   id: string;
   text: string;
+  category: string;
   hashtags: string[];
   country: string;
   yesVotes: number;

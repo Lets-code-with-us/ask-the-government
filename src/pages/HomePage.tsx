@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { QuestionFeed } from '../components/QuestionFeed';
 import { useAuth } from '../hooks/useAuth';
 import { useRealTimeVotes } from '../hooks/useRealTimeVotes';
@@ -6,6 +6,7 @@ import { mockQuestions } from '../data/mockQuestions';
 import { Question } from '../types';
 
 interface HomePageProps {
+  questions: Question[];
   onLoginClick: () => void;
 }
 
@@ -15,8 +16,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
 
   // Handle real-time vote updates
   const handleVoteUpdate = (updatedQuestion: Question) => {
-    setQuestions(prev =>
-      prev.map(q => 
+    setQuestions(prevQuestions =>
+      prevQuestions.map(q =>
         q.id === updatedQuestion.id ? updatedQuestion : q
       )
     );
@@ -33,57 +34,60 @@ export const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
       return;
     }
 
-    // Find the question to update
-    const question = questions.find(q => q.id === questionId);
-    if (!question || question.userVote) return;
+const handleVote = async (questionId: string, voteType: 'yes' | 'no') => {
+  if (!isAuthenticated || !user) {
+    // In a real app, this would redirect to login or show a login modal
+    return;
+  }
 
-    // Calculate new vote counts
-    const newYesVotes = voteType === 'yes' ? question.yesVotes + 1 : question.yesVotes;
-    const newNoVotes = voteType === 'no' ? question.noVotes + 1 : question.noVotes;
-    const newTotalVotes = newYesVotes + newNoVotes;
+  // Find the question to update
+  const question = questions.find(q => q.id === questionId);
+  if (!question || question.userVote) return;
 
-    // Update local state immediately (optimistic update)
-    const updatedQuestion = {
-      ...question,
-      userVote: voteType,
-      yesVotes: newYesVotes,
-      noVotes: newNoVotes,
-      totalVotes: newTotalVotes,
-    };
+  // Calculate new vote counts
+  const newYesVotes = voteType === 'yes' ? question.yesVotes + 1 : question.yesVotes;
+  const newNoVotes = voteType === 'no' ? question.noVotes + 1 : question.noVotes;
+  const newTotalVotes = newYesVotes + newNoVotes;
 
-    setQuestions(prev =>
-      prev.map(q => 
-        q.id === questionId ? updatedQuestion : q
-      )
-    );
-
-    // Send vote update to other clients via WebSocket
-    if (isConnected) {
-      sendVoteUpdate(questionId, newYesVotes, newNoVotes, user.id);
-    }
+  // Update local state immediately (optimistic update)
+  const updatedQuestion = {
+    ...question,
+    userVote: voteType,
+    yesVotes: newYesVotes,
+    noVotes: newNoVotes,
+    totalVotes: newTotalVotes,
   };
 
-  const handleAskQuestion = (questionText: string, hashtags: string[], country: string) => {
-    if (!isAuthenticated || !user) return;
+  setQuestions(prev => prev.map(q => q.id === questionId ? updatedQuestion : q));
 
-    const newQuestion: Question = {
-      id: Date.now().toString(),
-      text: questionText,
-      hashtags,
-      country,
-      yesVotes: 0,
-      noVotes: 0,
-      totalVotes: 0,
-      author: {
-        id: user.id,
-        name: user.name,
-        avatar: user.avatar,
-      },
-      createdAt: new Date(),
-    };
+  // Send vote update to other clients via WebSocket
+  if (isConnected) {
+    sendVoteUpdate(questionId, newYesVotes, newNoVotes, user.id);
+  }
+};
 
-    setQuestions(prev => [newQuestion, ...prev]);
+const handleAskQuestion = (questionText: string, hashtags: string[], country: string, category: string) => {
+  if (!isAuthenticated || !user) return;
+
+  const newQuestion: Question = {
+    id: Date.now().toString(),
+    text: questionText,
+    hashtags,
+    country,
+    category, // Add category from your branch
+    yesVotes: 0,
+    noVotes: 0,
+    totalVotes: 0,
+    author: {
+      id: user.id,
+      name: user.name,
+      avatar: user.avatar,
+    },
+    createdAt: new Date(),
   };
+
+  setQuestions(prev => [newQuestion, ...prev]);
+};
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8 pb-24">
