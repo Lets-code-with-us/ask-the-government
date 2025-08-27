@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
-import Hash, Calendar, User, Shield, Share2, TrendingUp, MapPin, Flag, Tag, Wifi
+import { Hash, Calendar, User, Shield, Share2, TrendingUp, MapPin, Flag, Tag, Wifi } from 'lucide-react';
 import { Question } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { VoteButton } from './VoteButton';
 import { ReportModal } from './ReportModal';
 import { calculateVoteStats } from '../utils/voteCalculations';
-import calculateVoteStats, CATEGORY_COLORS, CATEGORY_ICONS, websocketService
+import { CATEGORY_COLORS, CATEGORY_ICONS } from '../constants/categories';
+
 interface QuestionCardProps {
   question: Question;
   onVote: (questionId: string, voteType: 'yes' | 'no') => void;
 }
+
+const websocketService = {
+  isConnected: () => true
+};
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({ question, onVote }) => {
   const { isAuthenticated } = useAuth();

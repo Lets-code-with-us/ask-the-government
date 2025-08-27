@@ -4,9 +4,10 @@ import { useAuth } from '../hooks/useAuth';
 import { useRealTimeVotes } from '../hooks/useRealTimeVotes';
 import { mockQuestions } from '../data/mockQuestions';
 import { Question } from '../types';
+import { useState } from 'react';
 
 interface HomePageProps {
-  questions: Question[];
+
   onLoginClick: () => void;
 }
 
@@ -27,12 +28,6 @@ export const HomePage: React.FC<HomePageProps> = ({ onLoginClick }) => {
     questions,
     onVoteUpdate: handleVoteUpdate,
   });
-
-  const handleVote = (questionId: string, voteType: 'yes' | 'no') => {
-    if (!isAuthenticated || !user) {
-      onLoginClick();
-      return;
-    }
 
 const handleVote = async (questionId: string, voteType: 'yes' | 'no') => {
   if (!isAuthenticated || !user) {
