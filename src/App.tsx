@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Header } from './components/Header';
 import { QuestionFeed } from './components/QuestionFeed';
@@ -24,6 +24,15 @@ function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [questions, setQuestions] = useState<Question[]>(mockQuestions);
   const { isLoading, isAuthenticated, user } = useAuth();
+
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 200);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleFABClick = () => {
     if (!isAuthenticated) {
@@ -78,7 +87,6 @@ function App() {
               onMenuClick={() => setIsMobileMenuOpen(true)}
             />
             <HomePage 
-              questions={questions}
               onLoginClick={() => setIsLoginModalOpen(true)}
             />
             <FloatingActionButton
@@ -110,6 +118,37 @@ function App() {
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
       />
+
+      {showBackToTop && (
+  <button
+    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+    style={{
+      position: 'fixed',
+      bottom: 90,
+      right: 23,
+      width: 58,
+      height: 58,
+      background: '#2563eb',
+      color: '#fff',
+      padding: '10px 16px',
+      borderRadius: '50%',
+      border: 'none',
+      fontSize: 28,
+      zIndex: 1000,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'background 0.3s ease',
+    }} >
+    <span aria-label="Back to top">
+      <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="18 15 12 9 6 15" />
+      </svg>
+    </span>
+  </button>
+)}
     </div>
   );
 }
